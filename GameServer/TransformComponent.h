@@ -9,16 +9,16 @@ public:
 
 	~TransformComponent();
 
-	virtual void Update(float delta);
-
-	bool IsMoving() const { return _isMoving; }
-	uint16 GetMoveDir() const { return _moveDir; }
+	const Vector3 GetRotConst() const { return _rotation; }
 
 	const Vector3& GetPosConst() const { return _position; }
-	void AutoChangeDir();
-	void SetDir(uint16 dir);
 
-	void SetPos(const Vector3& pos);
+	const Vector3& GetNormalizedDir() const { return _dirNormalized; }
+	void SetRandomDirection();
+
+	void Move(float delta);
+	void SetDirection(float rotY);
+	void SetPosition(const Vector3& pos);
 private:
 	bool CanGo(float prediction_x, float prediction_z);
 
@@ -28,7 +28,6 @@ private:
 	float _moveSpeed;
 
 	Vector3 _dirNormalized;
-	MoveDir _moveDir;
-	bool _isMoving;
+	//bool _isMoving;
 };
 

@@ -8,12 +8,12 @@ public:
 
 	virtual void Update(float delta);
 
-	bool IsAlive() const { return _curHp > 0; }
+	bool IsDead() const { return _curHp == 0; }
 private:
 	
-	uint16 _curHp;
-	uint16 _maxHp;
+	short _curHp;
+	short _maxHp;
 
-	uint16 _attackDamage;
+	short _attackDamage;
 	float _attackRange;
 };

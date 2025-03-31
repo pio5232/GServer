@@ -24,6 +24,9 @@ namespace C_Network
 
 		static ErrorCode ProcessMoveStartRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer);
 		static ErrorCode ProcessMoveStopRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer);
+		static ErrorCode ProcessChatRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer);
+	
+		static ErrorCode ProcessAttackRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer);
 	private:
 		static std::unordered_map<uint16, PacketFunc> _packetFuncsDic;
 

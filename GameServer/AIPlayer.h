@@ -11,7 +11,15 @@ namespace C_Content
 		~AIPlayer() { printf("~~~AI Destructor\n"); }
 
 		virtual void Update(float delta);
+
+		bool ConsiderToMove();
+		void UpdateAIMovement();
+		void SendUpdatePos();
+		
 	private:
-		double _dirChangeCool;
+		float _movementUpdateInterval;
+
+		float _posUpdateInterval;
+		Vector3 _lastUpdatePos;
 	};
 }

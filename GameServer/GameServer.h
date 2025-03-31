@@ -51,7 +51,7 @@ namespace C_Network
 
 		// 무조건 우측값의 형태로 받도록함..
 		void EnqueueAction(Action&& action);
-
+		WorldChatPtr GetWorldChatPtr();
 	private:
 		std::shared_ptr<class LanClient> _lanClient;
 
@@ -59,8 +59,12 @@ namespace C_Network
 		GameServerInfo _gameInfo;
 
 		std::atomic<bool> _isRunning;
-
 		std::atomic<int> _loadCompletedCnt;
+
+		void CheckHeartbeat();
+		volatile bool _canCheckHeartbeat;
+		std::thread _heartbeatCheckThread;
+
 	 	};
 
 }

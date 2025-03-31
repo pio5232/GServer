@@ -7,6 +7,7 @@
 #include "GameSession.h"
 #include "LanClientSession.h"
 #include "GamePlayer.h"
+#include "WorldChat.h"
 
 std::unordered_map<uint16, C_Network::GameClientPacketHandler::PacketFunc> C_Network::GameClientPacketHandler::_packetFuncsDic;
 std::unordered_map<uint16, C_Network::LanServerPacketHandler::PacketFunc> C_Network::LanServerPacketHandler::_packetFuncsDic;
@@ -23,6 +24,10 @@ void C_Network::GameClientPacketHandler::Init()
 	
 	_packetFuncsDic[MOVE_START_REQUEST_PACKET] = ProcessMoveStartRequestPacket;
 	_packetFuncsDic[MOVE_STOP_REQUEST_PACKET] = ProcessMoveStopRequestPacket;
+	_packetFuncsDic[ATTACK_REQUEST_PACKET] = ProcessAttackRequestPacket;
+
+	_packetFuncsDic[CHAT_TO_ROOM_REQUEST_PACKET] = ProcessChatRequestPacket;
+
 }
 
 ErrorCode C_Network::GameClientPacketHandler::ProcessEnterGameRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer)
@@ -32,7 +37,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessEnterGameRequestPacket(Game
 	ULONGLONG userId;
 	ULONGLONG token;
 	buffer >> userId >> token;
-	printf("Enter Game Packet Recv.. %llu, userId : %d\n", gameSessionPtr->GetSessionId(),userId);
+	printf("Enter Game Packet Recv.. %llu, userId : %llu\n", gameSessionPtr->GetSessionId(),userId);
 
 	ULONGLONG serverToken = server->GetToken();
 
@@ -92,7 +97,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessLoadCompletedPacket(GameSes
 ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStartRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer)
 {
 	C_Network::MoveStartRequestPacket packet;
-	buffer >> packet.pos >> packet.moveDIr;
+	buffer >> packet.pos >> packet.rotY;
 
 	std::shared_ptr<C_Network::GameServer> gameServer = std::static_pointer_cast<C_Network::GameServer>(gameSessionPtr->GetServer());
 
@@ -101,7 +106,10 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStartRequestPacket(Game
 		{
 			GamePlayerPtr gamePlayer = myGSession->GetPlayer();
 
-			gamePlayer->ProcessMoveStart(packet);
+			if (gamePlayer->IsDead())
+				return;
+
+			gamePlayer->ProcessMoveStartPacket(packet);
 
 		});
 
@@ -114,7 +122,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStartRequestPacket(Game
 ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStopRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer)
 {
 	C_Network::MoveStopRequestPacket packet;
-	buffer >> packet.stopPos >> packet.stopDir;
+	buffer >> packet.pos >> packet.rotY;
 
 	std::shared_ptr<C_Network::GameServer> gameServer = std::static_pointer_cast<C_Network::GameServer>(gameSessionPtr->GetServer());
 
@@ -122,12 +130,55 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStopRequestPacket(GameS
 	gameServer->EnqueueAction([packet, myGSession]()
 		{
 			GamePlayerPtr gamePlayer = myGSession->GetPlayer();
+			
+			if (gamePlayer->IsDead())
+				return;
 
-			gamePlayer->ProcessMoveStop(packet);
+			gamePlayer->ProcessMoveStopPacket(packet);
 
 		});
 
 	return ErrorCode::NONE;
+}
+
+ErrorCode C_Network::GameClientPacketHandler::ProcessChatRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer)
+{
+	// GameWorld Chat
+	// roomNum은 무시하도록 한다.
+	uint16 roomNum;
+	uint16 messageLen;
+
+	buffer >> roomNum >> messageLen;
+
+	char* payLoad = static_cast<char*>(malloc(messageLen));
+
+	buffer.GetData(payLoad, messageLen);
+
+	ULONGLONG userId = gameSessionPtr->GetUserId();
+
+	PacketHeader packetHeader;
+
+	// --- NotifyPacket
+	packetHeader.size = sizeof(userId) + sizeof(messageLen) + messageLen;
+	packetHeader.type = CHAT_NOTIFY_PACKET;
+
+	C_Network::SharedSendBuffer notifyBuffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(packetHeader) + packetHeader.size);
+
+	*notifyBuffer << packetHeader << userId << messageLen;
+	notifyBuffer->PutData(reinterpret_cast<const char*>(payLoad), messageLen);
+
+	free(payLoad);
+
+	WorldChatPtr worldChatPtr = std::static_pointer_cast<C_Network::GameServer>(gameSessionPtr->GetServer())->GetWorldChatPtr();
+
+	worldChatPtr->DoAsync(&C_Content::WorldChat::Chat, notifyBuffer);
+
+	return ErrorCode::NONE;
+}
+
+ErrorCode C_Network::GameClientPacketHandler::ProcessAttackRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer)
+{
+	return ErrorCode();
 }
 
 // --------------------------- LanServerPacketHandler ---------------------

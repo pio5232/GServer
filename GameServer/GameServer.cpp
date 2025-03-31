@@ -11,6 +11,8 @@
 #include "PacketMaker.h"
 #include "GameWorld.h"
 #include "AIPlayer.h"
+#include "GameSession.h"
+#include "WorldChat.h"
 
 C_Network::GameServer::GameServer(const NetAddress& netAddr, uint maxSessionCnt, C_Network::SessionCreator creator) : ServerBase(netAddr, maxSessionCnt, creator), _gameInfo{}, _isRunning(false), _loadCompletedCnt(0)
 {
@@ -27,6 +29,10 @@ C_Network::GameServer::GameServer(const NetAddress& netAddr, uint maxSessionCnt,
 
 C_Network::GameServer::~GameServer()
 {
+	_canCheckHeartbeat = false;
+
+	if (_heartbeatCheckThread.joinable())
+		_heartbeatCheckThread.join();
 }
 
 void C_Network::GameServer::Init(uint16 roomNumber, uint16 requiredUsers, uint16 maxUsers)
@@ -95,9 +101,8 @@ void C_Network::GameServer::MakeAndSendPlayers()
 	
 		 makeOtherCharacterPacket.entityId = aiPlayer->GetEntityId();
 		 makeOtherCharacterPacket.pos = aiPlayer->GetPosConst();
-		 makeOtherCharacterPacket.isAi = true;
 
-		 *sendBuffer << makeOtherCharacterPacket.size << makeOtherCharacterPacket.type << makeOtherCharacterPacket.entityId << makeOtherCharacterPacket.pos << makeOtherCharacterPacket.isAi;
+		 *sendBuffer << makeOtherCharacterPacket.size << makeOtherCharacterPacket.type << makeOtherCharacterPacket.entityId << makeOtherCharacterPacket.pos;
 
 	}
 	C_Content::PlayerManager::GetInstance().MakeUserCharactersPacket(sendBuffer);
@@ -152,6 +157,12 @@ GamePlayerPtr C_Network::GameServer::CreatePlayer(GameSessionPtr gameSessionPtr)
 {
 	GamePlayerPtr playerPtr = C_Content::PlayerManager::GetInstance().CreatePlayer(gameSessionPtr);
 
+	WorldChatPtr worldChatPtr = _gameWorld->GetWorldChat();
+
+	GameSessionPtr thisSessionPtr = static_pointer_cast<GameSession>(gameSessionPtr->shared_from_this());
+	
+	worldChatPtr->DoAsync(&C_Content::WorldChat::RegisterMember, thisSessionPtr);
+
 	EnqueueAction([this, playerPtr]() {_gameWorld->AddEntity(playerPtr); });
 		
 	return playerPtr;
@@ -159,8 +170,14 @@ GamePlayerPtr C_Network::GameServer::CreatePlayer(GameSessionPtr gameSessionPtr)
 
 ErrorCode C_Network::GameServer::DeletePlayer(GamePlayerPtr gamePlayerPtr)
 {
-	ErrorCode ret = C_Content::PlayerManager::GetInstance().DeletePlayer(gamePlayerPtr->GetUserId());
+	ULONGLONG userId = gamePlayerPtr->GetUserId();
+
+	ErrorCode ret = C_Content::PlayerManager::GetInstance().DeletePlayer(userId);
 	
+	WorldChatPtr worldChatPtr = _gameWorld->GetWorldChat();
+
+	worldChatPtr->DoAsync(&C_Content::WorldChat::RemoveMember,userId);
+
 	EnqueueAction([this, gamePlayerPtr]() { 
 
 		LeaveGameNotifyPacket leaveNotifyPacket;
@@ -180,4 +197,23 @@ ErrorCode C_Network::GameServer::DeletePlayer(GamePlayerPtr gamePlayerPtr)
 void C_Network::GameServer::EnqueueAction(Action&& action)
 {
 	_gameWorld->EnqueueAction(std::move(action));
+}
+
+WorldChatPtr C_Network::GameServer::GetWorldChatPtr()
+{
+	return _gameWorld->GetWorldChat();
+}
+
+void C_Network::GameServer::CheckHeartbeat()
+{
+	printf("[ Check Heartbeat Start ]\n");
+	while (_canCheckHeartbeat)
+	{
+		ULONGLONG now = C_Utility::GetTimeStamp();
+
+		_sessionMgr->CheckHeartbeatTimeOut(now);
+
+		Sleep(3000);
+	}
+	printf("[ Check Heartbeat End ]\n");
 }

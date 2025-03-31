@@ -16,8 +16,8 @@ namespace C_Content
 		std::weak_ptr<class GameSession> GetOwnerSessionWptr() { return _ownerSession; }
 		
 		// process packet data
-		void ProcessMoveStart(const MoveStartRequestPacket& clientPacket);
-		void ProcessMoveStop(const MoveStopRequestPacket& clientPacket);
+		void ProcessMoveStartPacket(const MoveStartRequestPacket& clientPacket);
+		void ProcessMoveStopPacket(const MoveStopRequestPacket& clientPacket);
 	private:
 		void CheckSync(const Vector3& clientPos);
 		ULONGLONG _userId;

@@ -20,6 +20,8 @@ namespace C_Content
 
 		void SetDSCount(uint16 predMaxCnt);
 
+		WorldChatPtr GetWorldChat() { return _worldChat; }
+
 	private:
 		HANDLE _startEvent;
 
@@ -34,6 +36,8 @@ namespace C_Content
 		// [shared_ptr<Entity>, vectorIndex] - 
 		std::unordered_map<EntityPtr, int> _entityToVectorIdxDic;
 		std::vector<EntityPtr> _entityArr;
+
+		WorldChatPtr _worldChat;
 
 
 	};

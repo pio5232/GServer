@@ -24,12 +24,17 @@ const uint16 defaultAttackDamage= 1;
 const float defaultAttackRange = 0.7f;
 
 const float defaultErrorRange = 5.0f; // 오차 범위
+const float aiPosUpdateInterval = 0.1f;
 
+
+const float attackDuration = 1.0f;
+const float attackedDuration = 1.0f;
 namespace C_Content
 {
 	class Entity;
 	class GamePlayer;
 	class AIPlayer;
+	class WorldChat;
 }
 
 
@@ -37,6 +42,7 @@ using GamePlayerPtr = std::shared_ptr<class C_Content::GamePlayer>;
 using AIPlayerPtr = std::shared_ptr<class C_Content::AIPlayer>;
 using EntityPtr = std::shared_ptr<class C_Content::Entity>;
 
+using WorldChatPtr = std::shared_ptr<class C_Content::WorldChat>;
 using Action = std::function<void()>;
 
 

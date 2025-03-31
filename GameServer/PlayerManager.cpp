@@ -16,7 +16,7 @@ GamePlayerPtr C_Content::PlayerManager::CreatePlayer(GameSessionPtr gameSessionP
 	
 	_playerCount.fetch_add(1);
 	
-	printf("CreatePlayer - GameSession User ID = [ %d ]\n ", gameSessionPtr->GetUserId());
+	printf("CreatePlayer - GameSession User ID = [ %llu ]\n ", gameSessionPtr->GetUserId());
 	return gamePlayerPtr;
 }
 
@@ -116,7 +116,7 @@ void C_Content::PlayerManager::MakeUserCharactersPacket(C_Network::SharedSendBuf
 		makeOtherPacket.entityId = gamePlayer->GetEntityId();
 		makeOtherPacket.pos = gamePlayer->GetPosConst();
 
-		*sendBuffer << makeOtherPacket.size << makeOtherPacket.type << makeOtherPacket.entityId << makeOtherPacket.pos << makeOtherPacket.isAi;
+		*sendBuffer << makeOtherPacket.size << makeOtherPacket.type << makeOtherPacket.entityId << makeOtherPacket.pos;
 	}
 
 	return;

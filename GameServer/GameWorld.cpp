@@ -2,6 +2,7 @@
 #include <Windows.h>
 #include "GameWorld.h"
 #include "Entity.h"
+#include "WorldChat.h"
 
 C_Content::GameWorld::GameWorld()
 {
@@ -12,6 +13,8 @@ C_Content::GameWorld::GameWorld()
 	_startEvent = CreateEvent(nullptr, false, false, nullptr);
 
 	_logicThread = std::thread([this]() { this->Update(); });
+
+	_worldChat = std::make_shared<WorldChat>();
 }
 
 C_Content::GameWorld::~GameWorld()
@@ -74,13 +77,6 @@ void C_Content::GameWorld::ProcessActions()
 		SRWLockGuard lockGuard(&_actionLock);
 
 		std::swap(_actionQueue, tempActionQueue);
-		//while (_actionQueue.size() > 0)
-		//{
-		//	Action action = std::move(_actionQueue.front());
-		//	_actionQueue.pop();
-
-		//	tempActionQueue.push(std::move(action));
-		//}
 	}
 
 	while (tempActionQueue.size() > 0)
