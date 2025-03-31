@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Contents">
+      <UniqueIdentifier>{292897fe-8e9f-41c5-b848-26392f9753ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Main">
+      <UniqueIdentifier>{abcf3639-2322-48a4-a677-4e1f51358af6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Utils">
+      <UniqueIdentifier>{3a4e2cdb-f0bd-4b62-8436-227d0340d961}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Contents\Entities">
+      <UniqueIdentifier>{3b53e627-6a63-4a4a-9b66-2b9feb27116b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Contents\PlayerState">
+      <UniqueIdentifier>{dfa8bfc3-b17b-4c3a-8252-a022d2ca368f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="GameServer.cpp">
+      <Filter>Contents</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp" />
+    <ClCompile Include="LanClient.cpp">
+      <Filter>Contents</Filter>
+    </ClCompile>
+    <ClCompile Include="StatComponent.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="TransformComponent.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GameSession.cpp" />
+    <ClCompile Include="LanClientSession.cpp" />
+    <ClCompile Include="PacketHandler.cpp">
+      <Filter>Main</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerManager.cpp">
+      <Filter>Contents</Filter>
+    </ClCompile>
+    <ClCompile Include="GameServerDefine.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="GamePlayer.cpp">
+      <Filter>Contents\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="AIPlayer.cpp">
+      <Filter>Contents\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Contents\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="GameWorld.cpp">
+      <Filter>Contents</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Contents\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="WorldChat.cpp">
+      <Filter>Contents\Entities</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerStateBase.cpp">
+      <Filter>Contents\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerState.cpp">
+      <Filter>Contents\PlayerState</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerStateController.cpp">
+      <Filter>Contents\PlayerState</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameServer.h">
+      <Filter>Contents</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="LanClient.h">
+      <Filter>Contents</Filter>
+    </ClInclude>
+    <ClInclude Include="GameServerDefine.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="StatComponent.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="TransformComponent.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="GameSession.h" />
+    <ClInclude Include="LanClientSession.h" />
+    <ClInclude Include="PacketHandler.h">
+      <Filter>Main</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerManager.h">
+      <Filter>Contents</Filter>
+    </ClInclude>
+    <ClInclude Include="GamePlayer.h">
+      <Filter>Contents\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="AIPlayer.h">
+      <Filter>Contents\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Contents\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="GameWorld.h">
+      <Filter>Contents</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Contents\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="WorldChat.h">
+      <Filter>Contents\Entities</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerStateBase.h">
+      <Filter>Contents\PlayerState</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerState.h">
+      <Filter>Contents\PlayerState</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerStateController.h">
+      <Filter>Contents\PlayerState</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
