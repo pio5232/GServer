@@ -8,7 +8,10 @@ public:
 
 	virtual void Update(float delta);
 
-	bool IsDead() const { return _curHp == 0; }
+	bool IsDead() const 
+	{ 
+		return _curHp == 0; 
+	}
 private:
 	
 	short _curHp;

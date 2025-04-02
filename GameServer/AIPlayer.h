@@ -14,12 +14,8 @@ namespace C_Content
 
 		bool ConsiderToMove();
 		void UpdateAIMovement();
-		void SendUpdatePos();
 		
 	private:
 		float _movementUpdateInterval;
-
-		float _posUpdateInterval;
-		Vector3 _lastUpdatePos;
 	};
 }

@@ -9,6 +9,12 @@ using GameSessionPtr = std::shared_ptr<C_Network::GameSession>;
 
 using LanClientSessionPtr = std::shared_ptr<C_Network::LanClientSession>;
 
+const int fixedFrame = 60;
+const float fixedDeltaTime = 1.0f / fixedFrame;
+// 한번에 측정가능한 최대 델타 (넘으면 날려버림) => delta가 크게 나왔을때의 처리 프레임 제한
+const float limitDeltaTime = 0.2f; 
+
+
 const float sectorMinX = 0;
 const float sectorMaxX = 100.0f;
 const float sectorMinZ = 0;
@@ -23,11 +29,11 @@ const uint16 defaultAttackDamage= 1;
 
 const float defaultAttackRange = 0.7f;
 
-const float defaultErrorRange = 5.0f; // 오차 범위
-const float aiPosUpdateInterval = 0.1f;
+const float defaultErrorRange = 3.0f; // 오차 범위
+const float posUpdateInterval = 0.2f;
 
 
-const float attackDuration = 1.0f;
+const float attackDuration = 0.8f;
 const float attackedDuration = 1.0f;
 namespace C_Content
 {

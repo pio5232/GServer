@@ -15,7 +15,7 @@
 //}
 //
 
-C_Content::GamePlayer::GamePlayer(GameSessionPtr gameSessionPtr) : Player(EntityType::GamePlayer),_ownerSession(gameSessionPtr), _userId(gameSessionPtr->GetUserId())
+C_Content::GamePlayer::GamePlayer(GameSessionPtr gameSessionPtr) : Player(EntityType::GamePlayer, posUpdateInterval),_ownerSession(gameSessionPtr), _userId(gameSessionPtr->GetUserId())
 {
 }
 
@@ -24,7 +24,7 @@ void C_Content::GamePlayer::Update(float delta)
 	if (IsDead())
 		return;
 
-	_stateController->Update(delta);
+	Player::Update(delta);
 
 	//printf("Player Position : [%0.3f, %0.3f, %0.3f]\n", _transformComponent.GetPosConst().x, _transformComponent.GetPosConst().y, _transformComponent.GetPosConst().z);
 
@@ -34,8 +34,8 @@ void C_Content::GamePlayer::Update(float delta)
 
 void C_Content::GamePlayer::ProcessMoveStartPacket(const MoveStartRequestPacket& clientPacket)
 {
-	//printf("Process Move Start [%0.3f, %0.3f, %0.3f]\n", clientPacket.pos.x, clientPacket.pos.y, clientPacket.pos.z);
-	CheckSync(clientPacket.pos);
+	//printf("Process Move Start [%0.3f, %0.3f, %0.3f] RotY : %f\n", clientPacket.pos.x, clientPacket.pos.y, clientPacket.pos.z, clientPacket.rotY);
+	SyncPos(clientPacket.pos);
 
 	_transformComponent.SetDirection(clientPacket.rotY);
 
@@ -46,12 +46,10 @@ void C_Content::GamePlayer::ProcessMoveStartPacket(const MoveStartRequestPacket&
 
 void C_Content::GamePlayer::ProcessMoveStopPacket(const MoveStopRequestPacket& clientPacket)
 {
-	//printf("Process Move Stop [%0.3f, %0.3f, %0.3f]\n", clientPacket.pos.x, clientPacket.pos.y, clientPacket.pos.z);
+	//printf("Process Move Stop [%0.3f, %0.3f, %0.3f] RotY : %f\n", clientPacket.pos.x, clientPacket.pos.y, clientPacket.pos.z,clientPacket.rotY);
 	//printf("Process Move Stop [%0.3f, %0.3f, %0.3f], Rot : %0.3f\n", clientPacket.pos.x, clientPacket.pos.y, clientPacket.pos.z,clientPacket.rotY);
 
-	CheckSync(clientPacket.pos);
-
-	//_transformComponent.SetDirection(clientPacket.stopDir);
+	SyncPos(clientPacket.pos);
 
 	_transformComponent.SetDirection(clientPacket.rotY);
 
@@ -61,7 +59,7 @@ void C_Content::GamePlayer::ProcessMoveStopPacket(const MoveStopRequestPacket& c
 }
 
 
-void C_Content::GamePlayer::CheckSync(const Vector3& clientPos)
+void C_Content::GamePlayer::SyncPos(const Vector3& clientPos)
 {
 	Vector3 serverPos = _transformComponent.GetPosConst();
 
@@ -83,5 +81,6 @@ void C_Content::GamePlayer::CheckSync(const Vector3& clientPos)
 
 	C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
 
-	printf("Sync!! ID - %llu , Position [%0.3f, %0.3f, %0.3f]\n", GetEntityId(), serverPos.x, serverPos.y, serverPos.z);
+	printf("Sync!! ID - %llu ,PlayerPos [%0.3f, %0.3f, %0.3f], Position [%0.3f, %0.3f, %0.3f]\n", GetEntityId(),clientPos.x, clientPos.y, clientPos.z, serverPos.x, serverPos.y, serverPos.z);
+	//printf("Sync Rot ID - %llu ,Server Rotation [%0.3f, %0.3f, %0.3f]\n\n", GetEntityId(),syncPacket.syncRot.x, syncPacket.syncRot.y, syncPacket.syncRot.z);
 }

@@ -19,7 +19,7 @@ namespace C_Content
 		void ProcessMoveStartPacket(const MoveStartRequestPacket& clientPacket);
 		void ProcessMoveStopPacket(const MoveStopRequestPacket& clientPacket);
 	private:
-		void CheckSync(const Vector3& clientPos);
+		void SyncPos(const Vector3& clientPos);
 		ULONGLONG _userId;
 		std::weak_ptr<class GameSession> _ownerSession;
 	};

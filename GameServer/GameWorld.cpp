@@ -46,16 +46,27 @@ void C_Content::GameWorld::Update()
 
 	timer.Start();
 
+	float deltaSum = 0;
 	// 조건 바꾸기.
 	while (true)
 	{
-		float delta = timer.Lap<float>();
+		float deltaTime = timer.Lap<float>();
 
+		if (deltaTime > limitDeltaTime)
+			deltaTime = limitDeltaTime;
+
+		deltaSum += deltaTime;
+		// 네트워크
 		ProcessActions();
 
-		for (EntityPtr& entity : _entityArr)
+		if (deltaSum >= fixedDeltaTime)
 		{
-			entity->Update(delta);
+			for (EntityPtr& entity : _entityArr)
+			{
+				entity->Update(fixedDeltaTime);
+			}
+
+			deltaSum -= fixedDeltaTime;
 		}
 	}
 

@@ -13,7 +13,7 @@ _actionElapsedTime(0)
 
 void C_Content::PlayerStateController::ChangeState(PlayerMoveStateBase* to)
 {
-	if (to != nullptr && to == _moveStateBasePtr)
+	if (to == nullptr || to == _moveStateBasePtr)
 		return;
 
 	_moveStateBasePtr = to;
@@ -21,7 +21,7 @@ void C_Content::PlayerStateController::ChangeState(PlayerMoveStateBase* to)
 
 void C_Content::PlayerStateController::ChangeState(PlayerActionStateBase* to)
 {
-	if (to != nullptr && to == _actionStateBasePtr)
+	if (to == nullptr || to == _actionStateBasePtr)
 		return;
 
 	_actionElapsedTime = 0;
@@ -38,8 +38,12 @@ void C_Content::PlayerStateController::Update(float delta)
 
 	if (_actionStateBasePtr != nullptr)
 	{		
+		if (_actionStateBasePtr->GetType() == C_Content::PlayerActionStateBase::ActionState::None)
+			return;
+
 		_actionStateBasePtr->OnStayState(_player, delta);		
 	
+
 		_actionElapsedTime += delta;
 
 		if (_actionElapsedTime >= _actionStateBasePtr->GetDuration())
@@ -62,4 +66,4 @@ C_Content::PlayerActionStateBase::ActionState C_Content::PlayerStateController::
 		return PlayerActionStateBase::ActionState::None;
 
 	return _actionStateBasePtr->GetType();
-}
+} 

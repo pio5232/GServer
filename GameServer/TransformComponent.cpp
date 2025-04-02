@@ -27,6 +27,7 @@ void TransformComponent::SetRandomDirection()
 
 void TransformComponent::Move(float delta)
 {
+
 	Vector3 moveVector = _dirNormalized * delta * _moveSpeed;
 	if (CanGo(_position.x + moveVector.x, _position.z + moveVector.z) == false)
 		return;

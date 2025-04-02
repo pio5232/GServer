@@ -5,7 +5,7 @@
 #include "PacketMaker.h"
 #include "PlayerStateController.h"
 #include "PlayerState.h"
-C_Content::AIPlayer::AIPlayer() : Player(EntityType::AIPlayer), _movementUpdateInterval(0), _posUpdateInterval(aiPosUpdateInterval), _lastUpdatePos{}
+C_Content::AIPlayer::AIPlayer() : Player(EntityType::AIPlayer, posUpdateInterval), _movementUpdateInterval(0)
 {
 }
 
@@ -15,7 +15,7 @@ void C_Content::AIPlayer::Update(float delta)
 		return;
 
 	_movementUpdateInterval -= delta;
-	_posUpdateInterval -= delta;
+	//_posUpdateInterval -= delta;
 
 	if (_movementUpdateInterval <= 0)
 	{
@@ -24,19 +24,21 @@ void C_Content::AIPlayer::Update(float delta)
 		UpdateAIMovement();
 	}
 
-	if (_posUpdateInterval <= 0)
-	{
-		_posUpdateInterval = aiPosUpdateInterval;
+	//if (_posUpdateInterval <= 0)
+	//{
+	//	_posUpdateInterval = posUpdateInterval;
 
-		SendUpdatePos();
-	}
-	
-	_stateController->Update(delta);
+	//	SendPositionUpdate();
+	//}
+
+	//_stateController->Update(delta);
+
+	Player::Update(delta);
 }
 bool C_Content::AIPlayer::ConsiderToMove()
 {
-	// 75% Move, 25% Idle
-	return static_cast<float>(GetRandDouble(1.0, 4.0, 2)) < 3.25f;
+	// 70% Move, 30% Idle
+	return static_cast<float>(GetRandDouble(1.0, 4.0, 2)) < 3.1f;
 }
 
 void C_Content::AIPlayer::UpdateAIMovement()
@@ -54,24 +56,4 @@ void C_Content::AIPlayer::UpdateAIMovement()
 	BroadcastMoveState();
 
 }
-void C_Content::AIPlayer::SendUpdatePos()
-{
-	Vector3 currentPos = _transformComponent.GetPosConst();
 
-	if (Vector3::Distance(currentPos, _lastUpdatePos) < 0.1f)
-		return;
-
-	C_Network::UpdatePositionPacket updatePacket;
-
-	updatePacket.timeStamp = C_Utility::GetTimeStamp();
-	updatePacket.entityId = GetEntityId();
-	updatePacket.pos = currentPos;
-
-	SharedSendBuffer buffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(updatePacket));
-
-	*buffer << updatePacket.size << updatePacket.type << updatePacket.timeStamp << updatePacket.entityId << updatePacket.pos;
-
-	C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
-	
-	_lastUpdatePos = currentPos;
-}
