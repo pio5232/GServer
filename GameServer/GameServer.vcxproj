@@ -161,6 +161,7 @@
     <ClCompile Include="GameServerDefine.cpp" />
     <ClCompile Include="GameWorld.cpp" />
     <ClCompile Include="LanClientSession.cpp" />
+    <ClCompile Include="PacketBuilder.cpp" />
     <ClCompile Include="PacketHandler.cpp" />
     <ClCompile Include="GameServer.cpp" />
     <ClCompile Include="GameSession.cpp" />
@@ -187,6 +188,7 @@
     <ClInclude Include="GamePlayer.h" />
     <ClInclude Include="GameWorld.h" />
     <ClInclude Include="LanClientSession.h" />
+    <ClInclude Include="PacketBuilder.h" />
     <ClInclude Include="PacketHandler.h" />
     <ClInclude Include="GameServer.h" />
     <ClInclude Include="GameServerDefine.h" />

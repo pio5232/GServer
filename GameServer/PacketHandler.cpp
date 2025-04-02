@@ -3,7 +3,7 @@
 #include "PacketHandler.h"
 #include "PacketDefine.h"
 #include "PlayerManager.h"
-#include "PacketMaker.h"
+#include "BufferMaker.h"
 #include "GameSession.h"
 #include "LanClientSession.h"
 #include "GamePlayer.h"
@@ -46,7 +46,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessEnterGameRequestPacket(Game
 	if (serverToken != token)
 	{
 		printf("WRONG TOKEN!!\n");
-		C_Network::SharedSendBuffer sharedBuffer = C_Network::PacketMaker::MakeErrorPacket(C_Network::PacketErrorCode::CONNECTED_FAILED_WRONG_TOKEN);
+		C_Network::SharedSendBuffer sharedBuffer = C_Network::BufferMaker::MakeErrorPacket(C_Network::PacketErrorCode::CONNECTED_FAILED_WRONG_TOKEN);
 
 		gameSessionPtr->Send(sharedBuffer);
 
@@ -61,7 +61,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessEnterGameRequestPacket(Game
 
 	C_Network::EnterGameResponsePacket enterGameResponsePacket;
 
-	C_Network::SharedSendBuffer sharedBuffer = C_Network::PacketMaker::MakePacket(enterGameResponsePacket);
+	C_Network::SharedSendBuffer sharedBuffer = C_Network::BufferMaker::MakePacket(enterGameResponsePacket);
 
 	gameSessionPtr->Send(sharedBuffer);
 
@@ -69,7 +69,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessEnterGameRequestPacket(Game
 	makeMyCharacterPacket.entityId = myPlayer->GetEntityId();
 	makeMyCharacterPacket.pos = myPlayer->GetPosConst();
 
-	C_Network::SharedSendBuffer makeMyCharacterBuffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(makeMyCharacterPacket));
+	C_Network::SharedSendBuffer makeMyCharacterBuffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(makeMyCharacterPacket));
 
 	*makeMyCharacterBuffer << makeMyCharacterPacket.size << makeMyCharacterPacket.type <<
 		makeMyCharacterPacket.entityId << makeMyCharacterPacket.pos;
@@ -162,7 +162,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessChatRequestPacket(GameSessi
 	packetHeader.size = sizeof(userId) + sizeof(messageLen) + messageLen;
 	packetHeader.type = CHAT_NOTIFY_PACKET;
 
-	C_Network::SharedSendBuffer notifyBuffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(packetHeader) + packetHeader.size);
+	C_Network::SharedSendBuffer notifyBuffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(packetHeader) + packetHeader.size);
 
 	*notifyBuffer << packetHeader << userId << messageLen;
 	notifyBuffer->PutData(reinterpret_cast<const char*>(payLoad), messageLen);
@@ -178,7 +178,22 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessChatRequestPacket(GameSessi
 
 ErrorCode C_Network::GameClientPacketHandler::ProcessAttackRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer)
 {
-	return ErrorCode();
+	std::shared_ptr<C_Network::GameServer> gameServer = std::static_pointer_cast<C_Network::GameServer>(gameSessionPtr->GetServer());
+
+	GameSessionPtr myGSession = gameSessionPtr;
+	gameServer->EnqueueAction([myGSession]()
+		{
+			GamePlayerPtr gamePlayer = myGSession->GetPlayer();
+
+			if (gamePlayer->IsDead())
+				return;
+
+			gamePlayer->ProcessAttackPacket();
+
+		});
+
+
+	return ErrorCode::NONE;
 }
 
 // --------------------------- LanServerPacketHandler ---------------------
@@ -219,7 +234,7 @@ ErrorCode C_Network::LanServerPacketHandler::ProcessGameServerSettingResponsePac
 
 	C_Network::GameServerLanInfoPacket packet;
 
-	C_Network::SharedSendBuffer sendBuffer = C_Network::PacketMaker::MakeSendBuffer((sizeof(packet)));
+	C_Network::SharedSendBuffer sendBuffer = C_Network::BufferMaker::MakeSendBuffer((sizeof(packet)));
 
 	const std::wstring ip = gameServer->GetNetAddr().GetIpAddress();
 

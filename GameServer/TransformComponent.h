@@ -20,7 +20,8 @@ public:
 	void SetDirection(float rotY);
 	void SetPosition(const Vector3& pos);
 private:
-	bool CanGo(float prediction_x, float prediction_z);
+	bool CanGo(float prediction_x, float prediction_z) const;
+	bool IsEdge() const;
 
 private:
 	Vector3 _rotation;

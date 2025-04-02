@@ -19,6 +19,7 @@ const float sectorMinX = 0;
 const float sectorMaxX = 100.0f;
 const float sectorMinZ = 0;
 const float sectorMaxZ = 100.0f;
+const float edgeThreshold = 10.0f;
 
 const float defaultSlowWalkSpeed = 3.0f;
 const float defaultWalkSpeed = 6.0f;

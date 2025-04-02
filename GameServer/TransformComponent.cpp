@@ -16,6 +16,16 @@ TransformComponent::~TransformComponent()
 
 void TransformComponent::SetRandomDirection()
 {
+	if (IsEdge() && CheckChance(20))
+	{
+		Vector3 positionToCenter = Vector3::Zero() - _position;
+
+		float rotY = atan2f(positionToCenter.x, positionToCenter.z) * deg2Rad;
+
+		SetDirection(rotY);
+
+		return;
+	}
 	const float randomRange = 135.0f; // -135 ~ 135
 
 	float offset = static_cast<float>(GetRandDouble(-randomRange, randomRange));
@@ -53,7 +63,13 @@ void TransformComponent::SetPosition(const Vector3& pos)
 	_position = pos;
 }
 
-bool TransformComponent::CanGo(float prediction_x, float prediction_z)
+bool TransformComponent::CanGo(float prediction_x, float prediction_z) const
 {
 	return prediction_x > sectorMinX && prediction_x < sectorMaxX && prediction_z > sectorMinZ && prediction_z < sectorMaxZ;
+}
+
+bool TransformComponent::IsEdge() const
+{
+	return _position.x < edgeThreshold || _position.x > (sectorMaxX - edgeThreshold) 
+		|| _position.z < edgeThreshold || _position.z > (sectorMaxZ - edgeThreshold);
 }

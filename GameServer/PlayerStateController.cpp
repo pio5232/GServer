@@ -6,8 +6,8 @@
 ///	| PlayerStateController |
 /// +-----------------------+
 /// 
-C_Content::PlayerStateController::PlayerStateController(C_Content::Player* player) : _player(player), _actionStateBasePtr(nullptr), _moveStateBasePtr(nullptr),
-_actionElapsedTime(0)
+C_Content::PlayerStateController::PlayerStateController(C_Content::Player* player) : _player(player), _actionStateBasePtr(&NoneActionState::GetInstance()), 
+_moveStateBasePtr(nullptr),_actionElapsedTime(0)
 {
 }
 

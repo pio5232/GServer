@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Player.h"
 #include "PlayerManager.h"
-#include "PacketMaker.h"
+#include "BufferMaker.h"
 #include "PlayerStateController.h"
 C_Content::Player::Player(EntityType type,float updateInterval) : Entity(type), _lastUpdatePos{}, _posUpdateInterval(updateInterval)
 {
@@ -48,7 +48,7 @@ void C_Content::Player::BroadcastMoveState()
 		moveNotifyPacket.pos = _transformComponent.GetPosConst();
 		moveNotifyPacket.rotY = _transformComponent.GetRotConst().y;
 
-		C_Network::SharedSendBuffer buffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(moveNotifyPacket));
+		C_Network::SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(moveNotifyPacket));
 
 		*buffer << moveNotifyPacket.size << moveNotifyPacket.type << moveNotifyPacket.entityId << moveNotifyPacket.pos << moveNotifyPacket.rotY;
 
@@ -62,7 +62,7 @@ void C_Content::Player::BroadcastMoveState()
 		stopNotifyPacket.pos = _transformComponent.GetPosConst();
 		stopNotifyPacket.rotY = _transformComponent.GetRotConst().y;
 
-		C_Network::SharedSendBuffer buffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(stopNotifyPacket));
+		C_Network::SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(stopNotifyPacket));
 
 		*buffer << stopNotifyPacket.size << stopNotifyPacket.type << stopNotifyPacket.entityId << stopNotifyPacket.pos << stopNotifyPacket.rotY;
 
@@ -83,7 +83,7 @@ void C_Content::Player::SendPositionUpdate()
 	updatePacket.pos = currentPos;
 	updatePacket.rot = _transformComponent.GetRotConst();
 
-	SharedSendBuffer buffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(updatePacket));
+	SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(updatePacket));
 
 	*buffer << updatePacket.size << updatePacket.type << updatePacket.timeStamp << updatePacket.entityId << updatePacket.pos
 		<< updatePacket.rot;

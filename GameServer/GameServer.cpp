@@ -8,7 +8,7 @@
 #include "PlayerManager.h"
 #include "GamePlayer.h"
 #include "LanClientSession.h"
-#include "PacketMaker.h"
+#include "BufferMaker.h"
 #include "GameWorld.h"
 #include "AIPlayer.h"
 #include "GameSession.h"
@@ -87,7 +87,7 @@ void C_Network::GameServer::LanClientDisconnect()
 
 void C_Network::GameServer::MakeAndSendPlayers()
 {
-	C_Network::SharedSendBuffer sendBuffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(MakeOtherCharacterPacket) * _gameInfo.maxUsers);
+	C_Network::SharedSendBuffer sendBuffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(MakeOtherCharacterPacket) * _gameInfo.maxUsers);
 
 	uint16 aiCount = _gameInfo.maxUsers - _gameInfo.requiredUserCnt;
 
@@ -143,7 +143,7 @@ void C_Network::GameServer::CheckLoadingAndStartLogic()
 		C_Network::GameStartNotifyPacket gameStartNotifyPacket;
 		
 		// 이거 추후에 패킷 구조 바뀌게되면 (Header말고 데이터 있으면 따로 <<를 통해서 넣어주는 구조로 다시 만들어야함.) AAA
-		SharedSendBuffer sendBuffer = C_Network::PacketMaker::MakePacket(gameStartNotifyPacket);
+		SharedSendBuffer sendBuffer = C_Network::BufferMaker::MakePacket(gameStartNotifyPacket);
 
 		C_Content::PlayerManager::GetInstance().SendToAllPlayer(sendBuffer);
 
@@ -183,7 +183,7 @@ ErrorCode C_Network::GameServer::DeletePlayer(GamePlayerPtr gamePlayerPtr)
 		LeaveGameNotifyPacket leaveNotifyPacket;
 		leaveNotifyPacket.entityId = gamePlayerPtr->GetEntityId();
 
-		SharedSendBuffer buffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(leaveNotifyPacket));
+		SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(leaveNotifyPacket));
 		*buffer << leaveNotifyPacket.size << leaveNotifyPacket.type << leaveNotifyPacket.entityId;
 
 		C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);

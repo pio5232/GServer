@@ -2,7 +2,7 @@
 #include "LanClientSession.h"
 #include "PacketHandler.h"
 #include "PacketDefine.h"
-#include "PacketMaker.h"
+#include "BufferMaker.h"
 #include "GameServer.h"
 
 C_Network::LanClientSession::LanClientSession(std::weak_ptr<C_Network::ServerBase> gameServer)
@@ -23,7 +23,7 @@ void C_Network::LanClientSession::OnConnected()
 
 	C_Network::GameServerSettingRequestPacket requestPacket;
 
-	SharedSendBuffer sendBuffer = C_Network::PacketMaker::MakePacket(requestPacket);
+	SharedSendBuffer sendBuffer = C_Network::BufferMaker::MakePacket(requestPacket);
 
 	Send(sendBuffer);
 

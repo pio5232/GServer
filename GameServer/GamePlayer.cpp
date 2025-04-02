@@ -5,10 +5,10 @@
 #include "GameSession.h"
 #include "Player.h"
 #include "PlayerManager.h"
-#include "PacketMaker.h"
+#include "BufferMaker.h"
 #include "PlayerStateController.h"
 #include "PlayerState.h"
-
+#include "PacketBuilder.h"
 //C_Network::GamePlayer::GamePlayer(ULONGLONG userId, SharedSession sharedSession, bool isAi, Vector3 pos) : _userId(userId), _mySession(sharedSession),
 //_transformComponent(userId, pos), _statComponent(userId), _isAi(isAi)
 //{
@@ -58,12 +58,26 @@ void C_Content::GamePlayer::ProcessMoveStopPacket(const MoveStopRequestPacket& c
 	BroadcastMoveState();
 }
 
+void C_Content::GamePlayer::ProcessAttackPacket()
+{
+	printf("ProcessAttackPacket!!\n");
+
+	ULONGLONG entityId = GetEntityId();
+
+	_stateController->ChangeState(&C_Content::PlayerAttackedState::GetInstance());
+
+	C_Network::SharedSendBuffer buffer = PacketBuilder::BuildAttackNotifyPacket(entityId);
+
+	C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);	
+}
+
 
 void C_Content::GamePlayer::SyncPos(const Vector3& clientPos)
 {
 	Vector3 serverPos = _transformComponent.GetPosConst();
 
-	if (abs(serverPos.x - clientPos.x) < defaultErrorRange && abs(serverPos.z - clientPos.z) < defaultErrorRange)
+	//if (abs(serverPos.x - clientPos.x) < defaultErrorRange && abs(serverPos.z - clientPos.z) < defaultErrorRange)
+	if (Vector3::Distance(serverPos, clientPos) < defaultErrorRange)
 	{
 		// 오차 범위가 작으면 start / stop 나올 때 clientPos를 기준으로 설정. 
 		// 
@@ -75,7 +89,7 @@ void C_Content::GamePlayer::SyncPos(const Vector3& clientPos)
 	syncPacket.syncPos = serverPos;
 	syncPacket.syncRot = _transformComponent.GetRotConst();
 	
-	SharedSendBuffer buffer = C_Network::PacketMaker::MakeSendBuffer(sizeof(syncPacket));
+	SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(syncPacket));
 
 	*buffer << syncPacket.size << syncPacket.type << syncPacket.entityId << syncPacket.syncPos << syncPacket.syncRot;
 
