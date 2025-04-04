@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="AIPlayer.cpp" />
     <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="GameMonitor.cpp" />
     <ClCompile Include="GamePlayer.cpp" />
     <ClCompile Include="GameServerDefine.cpp" />
     <ClCompile Include="GameWorld.cpp" />
@@ -178,6 +179,7 @@
     <ClCompile Include="PlayerState.cpp" />
     <ClCompile Include="PlayerStateBase.cpp" />
     <ClCompile Include="PlayerStateController.cpp" />
+    <ClCompile Include="SectorManager.cpp" />
     <ClCompile Include="StatComponent.cpp" />
     <ClCompile Include="TransformComponent.cpp" />
     <ClCompile Include="WorldChat.cpp" />
@@ -185,6 +187,7 @@
   <ItemGroup>
     <ClInclude Include="AIPlayer.h" />
     <ClInclude Include="Entity.h" />
+    <ClInclude Include="GameMonitor.h" />
     <ClInclude Include="GamePlayer.h" />
     <ClInclude Include="GameWorld.h" />
     <ClInclude Include="LanClientSession.h" />
@@ -200,6 +203,8 @@
     <ClInclude Include="PlayerState.h" />
     <ClInclude Include="PlayerStateBase.h" />
     <ClInclude Include="PlayerStateController.h" />
+    <ClInclude Include="Sector.h" />
+    <ClInclude Include="SectorManager.h" />
     <ClInclude Include="StatComponent.h" />
     <ClInclude Include="TransformComponent.h" />
     <ClInclude Include="WorldChat.h" />

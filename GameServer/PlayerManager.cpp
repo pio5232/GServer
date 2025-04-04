@@ -5,12 +5,13 @@
 #include "PacketHandler.h"
 #include "GameSession.h"
 #include "AIPlayer.h"
-
-GamePlayerPtr C_Content::PlayerManager::CreatePlayer(GameSessionPtr gameSessionPtr)
+#include "GameWorld.h"
+using namespace C_Network;
+GamePlayerPtr C_Content::PlayerManager::CreatePlayer(GameSessionPtr gameSessionPtr, GameWorld* worldPtr)
 {
 	SRWLockGuard lockGuard(&_playerLock);
 		
-	GamePlayerPtr gamePlayerPtr = std::make_shared<GamePlayer>(gameSessionPtr);
+	GamePlayerPtr gamePlayerPtr = std::make_shared<GamePlayer>(gameSessionPtr, worldPtr);
 
 	_idToPlayerDic.insert({ gameSessionPtr->GetUserId(), gamePlayerPtr });
 	
@@ -20,11 +21,11 @@ GamePlayerPtr C_Content::PlayerManager::CreatePlayer(GameSessionPtr gameSessionP
 	return gamePlayerPtr;
 }
 
-AIPlayerPtr C_Content::PlayerManager::CreateAI()
+AIPlayerPtr C_Content::PlayerManager::CreateAI(GameWorld* worldPtr)
 {
 	static ULONGLONG idGenerator = 0;
 
-	AIPlayerPtr aiPlayer = std::make_shared<C_Content::AIPlayer>();
+	AIPlayerPtr aiPlayer = std::make_shared<C_Content::AIPlayer>(worldPtr);
 
 	//SRWLockGuard lockGuard(&_aiLock);
 
@@ -35,12 +36,14 @@ AIPlayerPtr C_Content::PlayerManager::CreateAI()
 
 ErrorCode C_Content::PlayerManager::DeletePlayer(ULONGLONG userId)
 {
-	SRWLockGuard lockGuard(&_playerLock);
-	
-	if (_idToPlayerDic.find(userId) == _idToPlayerDic.end())
-		return ErrorCode::NOT_FOUND;
+	{
+		SRWLockGuard lockGuard(&_playerLock);
 
-	_idToPlayerDic.erase(userId);
+		if (_idToPlayerDic.find(userId) == _idToPlayerDic.end())
+			return ErrorCode::NOT_FOUND;
+
+		_idToPlayerDic.erase(userId);
+	}
 	
 	_playerCount.fetch_sub(1);
 
@@ -56,10 +59,34 @@ ErrorCode C_Content::PlayerManager::DeletePlayer(ULONGLONG userId)
 //
 //	_idToAiDic.erase(userId);
 //
-//	_playerCount.fetch_sub(1);
+//	_gamePlayerCount.fetch_sub(1);
 //
 //	return ErrorCode::NONE;
 //}
+
+ErrorCode C_Content::PlayerManager::SendToPlayer(C_Network::SharedSendBuffer buffer, ULONGLONG userId)
+{
+	std::unordered_map<ULONGLONG,GamePlayerPtr>::iterator findIt;
+	
+	{
+		SRWLockGuard lockGuard(&_playerLock);
+		findIt = _idToPlayerDic.find(userId);
+
+		if(findIt == _idToPlayerDic.end())
+			return ErrorCode::NOT_FOUND;
+	}
+
+	std::weak_ptr<C_Network::GameSession> gameSessionWptr = findIt->second->GetOwnerSessionWptr();
+
+	if (gameSessionWptr.expired())
+		return ErrorCode::ACCESS_DELETE_MEMBER;
+
+	GameSessionPtr gameSessionPtr = gameSessionWptr.lock();
+
+	gameSessionPtr->Send(buffer);
+
+	return ErrorCode::NONE;
+}
 
 ErrorCode C_Content::PlayerManager::SendToAllPlayer(SharedSendBuffer buffer)
 {
@@ -114,7 +141,7 @@ void C_Content::PlayerManager::MakeUserCharactersPacket(C_Network::SharedSendBuf
 	for (GamePlayerPtr& gamePlayer : gamePlayersVec)
 	{
 		makeOtherPacket.entityId = gamePlayer->GetEntityId();
-		makeOtherPacket.pos = gamePlayer->GetPosConst();
+		makeOtherPacket.pos = gamePlayer->GetPosition();
 
 		*sendBuffer << makeOtherPacket.size << makeOtherPacket.type << makeOtherPacket.entityId << makeOtherPacket.pos;
 	}

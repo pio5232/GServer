@@ -4,6 +4,7 @@
 
 namespace C_Content
 {
+	class GameWorld;
 	class PlayerManager //: public C_Utility::JobQueue
 	{
 	public:
@@ -16,11 +17,13 @@ namespace C_Content
 		PlayerManager(const PlayerManager&) = delete;
 		PlayerManager& operator=(const PlayerManager&) = delete;
 
-		GamePlayerPtr CreatePlayer(GameSessionPtr gameSessionPtr);
-		AIPlayerPtr CreateAI();
+		GamePlayerPtr CreatePlayer(GameSessionPtr gameSessionPtr,class C_Content::GameWorld* worldPtr);
+		AIPlayerPtr CreateAI(class C_Content::GameWorld* worldPtr);
 
 		ErrorCode DeletePlayer(ULONGLONG userId);
 		//ErrorCode DeleteAI(ULONGLONG userId);
+
+		ErrorCode SendToPlayer(C_Network::SharedSendBuffer buffer, ULONGLONG userId);
 		ErrorCode SendToAllPlayer(C_Network::SharedSendBuffer buffer);
 
 		uint16 GetPlayerCount() { return _playerCount.load(); }

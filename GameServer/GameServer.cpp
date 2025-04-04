@@ -10,13 +10,14 @@
 #include "LanClientSession.h"
 #include "BufferMaker.h"
 #include "GameWorld.h"
-#include "AIPlayer.h"
 #include "GameSession.h"
 #include "WorldChat.h"
-
+#include "GameMonitor.h"
 C_Network::GameServer::GameServer(const NetAddress& netAddr, uint maxSessionCnt, C_Network::SessionCreator creator) : ServerBase(netAddr, maxSessionCnt, creator), _gameInfo{}, _isRunning(false), _loadCompletedCnt(0)
 {
 	_gameWorld = std::make_unique<C_Content::GameWorld>();
+
+	_monitor = std::make_unique<C_Utility::GameMonitor>(_sessionMgr.get(), _gameWorld->GetSectorManagerConst());
 
 	std::random_device rd;
 	std::mt19937_64 generator(rd()); // ½Ãµå ¼¯À½.
@@ -85,31 +86,6 @@ void C_Network::GameServer::LanClientDisconnect()
 	_lanClient->Disconnect();
 }
 
-void C_Network::GameServer::MakeAndSendPlayers()
-{
-	C_Network::SharedSendBuffer sendBuffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(MakeOtherCharacterPacket) * _gameInfo.maxUsers);
-
-	uint16 aiCount = _gameInfo.maxUsers - _gameInfo.requiredUserCnt;
-
-	C_Network::MakeOtherCharacterPacket makeOtherCharacterPacket;
-
-	for (int i = 0; i < aiCount; i++)
-	{
-		 AIPlayerPtr aiPlayer = C_Content::PlayerManager::GetInstance().CreateAI();
-
-		 _gameWorld->AddEntity(aiPlayer->shared_from_this());
-	
-		 makeOtherCharacterPacket.entityId = aiPlayer->GetEntityId();
-		 makeOtherCharacterPacket.pos = aiPlayer->GetPosConst();
-
-		 *sendBuffer << makeOtherCharacterPacket.size << makeOtherCharacterPacket.type << makeOtherCharacterPacket.entityId << makeOtherCharacterPacket.pos;
-
-	}
-	C_Content::PlayerManager::GetInstance().MakeUserCharactersPacket(sendBuffer);
-
-	C_Content::PlayerManager::GetInstance().SendToAllPlayer(sendBuffer);
-}
-
 ErrorCode C_Network::GameServer::TryRun()
 {
 	if (_isRunning.load() == true)
@@ -125,7 +101,7 @@ ErrorCode C_Network::GameServer::TryRun()
 
 		if (_isRunning.compare_exchange_strong(expected, desired) == true)
 		{
-			MakeAndSendPlayers();
+			_gameWorld->Init(_gameInfo.maxUsers, _gameInfo.requiredUserCnt); 
 
 			printf("Start Game\n");
 		}
@@ -155,15 +131,15 @@ void C_Network::GameServer::CheckLoadingAndStartLogic()
 
 GamePlayerPtr C_Network::GameServer::CreatePlayer(GameSessionPtr gameSessionPtr)
 {
-	GamePlayerPtr playerPtr = C_Content::PlayerManager::GetInstance().CreatePlayer(gameSessionPtr);
+	GamePlayerPtr playerPtr = C_Content::PlayerManager::GetInstance().CreatePlayer(gameSessionPtr, _gameWorld.get());
 
 	WorldChatPtr worldChatPtr = _gameWorld->GetWorldChat();
 
-	GameSessionPtr thisSessionPtr = static_pointer_cast<GameSession>(gameSessionPtr->shared_from_this());
+	GameSessionPtr thisSessionPtr = static_pointer_cast<GameSession>(gameSessionPtr);
 	
 	worldChatPtr->DoAsync(&C_Content::WorldChat::RegisterMember, thisSessionPtr);
 
-	EnqueueAction([this, playerPtr]() {_gameWorld->AddEntity(playerPtr); });
+	EnqueueAction([this, playerPtr]() {_gameWorld->AddEntity(playerPtr); }, true);
 		
 	return playerPtr;
 }
@@ -180,23 +156,23 @@ ErrorCode C_Network::GameServer::DeletePlayer(GamePlayerPtr gamePlayerPtr)
 
 	EnqueueAction([this, gamePlayerPtr]() { 
 
-		LeaveGameNotifyPacket leaveNotifyPacket;
+		/*LeaveGameNotifyPacket leaveNotifyPacket;
 		leaveNotifyPacket.entityId = gamePlayerPtr->GetEntityId();
 
 		SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(leaveNotifyPacket));
 		*buffer << leaveNotifyPacket.size << leaveNotifyPacket.type << leaveNotifyPacket.entityId;
 
-		C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
+		C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);*/
 
 		_gameWorld->RemoveEntity(gamePlayerPtr->GetEntityId()); 
-	});
+	}, true);
 	
 	return ret;
 }
 
-void C_Network::GameServer::EnqueueAction(Action&& action)
+void C_Network::GameServer::EnqueueAction(Action&& action, bool mustEnqueue)
 {
-	_gameWorld->EnqueueAction(std::move(action));
+	_gameWorld->TryEnqueueAction(std::move(action), mustEnqueue);
 }
 
 WorldChatPtr C_Network::GameServer::GetWorldChatPtr()

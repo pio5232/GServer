@@ -1,10 +1,9 @@
 #pragma once
 
-using namespace C_Network;
 class TransformComponent : public BaseComponent
 {
 public:
-	TransformComponent(Vector3 pos);
+	TransformComponent(const Vector3& pos);
 	TransformComponent();
 
 	~TransformComponent();

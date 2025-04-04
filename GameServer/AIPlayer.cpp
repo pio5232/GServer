@@ -5,7 +5,8 @@
 #include "BufferMaker.h"
 #include "PlayerStateController.h"
 #include "PlayerState.h"
-C_Content::AIPlayer::AIPlayer() : Player(EntityType::AIPlayer, posUpdateInterval), _movementUpdateInterval(0)
+#include "GameWorld.h"
+C_Content::AIPlayer::AIPlayer(GameWorld* worldPtr) : Player(worldPtr, EntityType::AIPlayer, posUpdateInterval), _movementUpdateInterval(0)
 {
 }
 
@@ -49,6 +50,5 @@ void C_Content::AIPlayer::UpdateAIMovement()
 	}
 
 	BroadcastMoveState();
-
 }
 

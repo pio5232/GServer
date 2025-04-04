@@ -3,15 +3,20 @@
 #include "GameWorld.h"
 #include "Entity.h"
 #include "WorldChat.h"
-
+#include "PlayerManager.h"
+#include "AIPlayer.h"
+#include "BufferMaker.h"
+#include "SectorManager.h"
+#include "PacketBuilder.h"
 C_Content::GameWorld::GameWorld()
 {
+	_sectorManager = std::make_unique<C_Content::SectorManager>();
+
 	InitializeSRWLock(&_actionLock);
 
 	srand(GetCurrentThreadId());
 	
-	_startEvent = CreateEvent(nullptr, false, false, nullptr);
-
+	_isRunning = false;
 	_logicThread = std::thread([this]() { this->Update(); });
 
 	_worldChat = std::make_shared<WorldChat>();
@@ -25,22 +30,12 @@ C_Content::GameWorld::~GameWorld()
 
 void C_Content::GameWorld::Start()
 {
-	SetEvent(_startEvent);
+	_isRunning.store(true);
 }
 
 void C_Content::GameWorld::Update()
 {
-	DWORD ret = WaitForSingleObject(_startEvent, INFINITE);
-
-	if (ret != WAIT_OBJECT_0)
-	{
-		printf("Update Wait ret is Not Wait_obj_0... Return...\n");
-		return;
-	}
-	else
-	{
-		printf("Update Start !! \n");
-	}
+	printf("Update Start !! \n");
 
 	C_Utility::CTimer timer;
 
@@ -55,15 +50,23 @@ void C_Content::GameWorld::Update()
 		if (deltaTime > limitDeltaTime)
 			deltaTime = limitDeltaTime;
 
-		deltaSum += deltaTime;
-		// 네트워크
 		ProcessActions();
 
+		if (false == _isRunning.load())
+			continue;
+
+		deltaSum += deltaTime;
+		// 네트워크
 		if (deltaSum >= fixedDeltaTime)
 		{
 			for (EntityPtr& entity : _entityArr)
 			{
 				entity->Update(fixedDeltaTime);
+
+				if (entity->IsSectorUpdated())
+				{
+					_sectorManager->UpdateSector(entity);
+				}
 			}
 
 			deltaSum -= fixedDeltaTime;
@@ -73,8 +76,13 @@ void C_Content::GameWorld::Update()
 
 }
 
-void C_Content::GameWorld::EnqueueAction(Action&& action)
+void C_Content::GameWorld::TryEnqueueAction(Action&& action, bool mustEnqueue)
 {
+	// 시작과 관계없이 처리되어야 하는 것도 아니고, 시작하지도 않았으면 무시
+	if (false == mustEnqueue && false == _isRunning.load())
+	{
+		return;
+	}
 	SRWLockGuard lockGuard(&_actionLock);
 
 	_actionQueue.push(std::move(action));
@@ -106,6 +114,9 @@ void C_Content::GameWorld::AddEntity(EntityPtr entityPtr)
 	_entityArr.push_back(entityPtr);
 	int index = _entityArr.size() - 1;
 	_entityToVectorIdxDic.insert(std::make_pair(entityPtr, index));
+
+	Sector sector = entityPtr->GetCurrentSector();
+	_sectorManager->AddEntity(sector.z, sector.x, entityPtr);
 }
 
 void C_Content::GameWorld::RemoveEntity(ULONGLONG entityId)
@@ -155,7 +166,29 @@ void C_Content::GameWorld::RemoveEntity(ULONGLONG entityId)
 	}
 	// 3. _entityArr.erase 
 	_entityArr.pop_back();
+
+	Sector sector = entityPtr->GetCurrentSector();
+	_sectorManager->DeleteEntity(sector.z, sector.x, entityPtr);
 	
+}
+
+void C_Content::GameWorld::Init(uint16 total, uint16 gamePlayerCount)
+{
+	uint16 aiCount = total - gamePlayerCount;
+
+	for (int i = 0; i < aiCount; i++)
+	{
+		AIPlayerPtr aiPlayer = C_Content::PlayerManager::GetInstance().CreateAI(this);
+
+		AddEntity(aiPlayer);
+	}
+
+	_sectorManager->SendAllEntityInfo();
+
+	// 초기화 내용 모두 전송했다는 의미
+	C_Network::SharedSendBuffer sendBuffer = C_Content::PacketBuilder::BuildGameInitDonePacket();
+
+	C_Content::PlayerManager::GetInstance().SendToAllPlayer(sendBuffer);
 }
 
 void C_Content::GameWorld::SetDSCount(uint16 predMaxCnt)
@@ -163,4 +196,14 @@ void C_Content::GameWorld::SetDSCount(uint16 predMaxCnt)
 	_entityDic.reserve(predMaxCnt);
 	_entityArr.reserve(predMaxCnt);
 	_entityToVectorIdxDic.reserve(predMaxCnt);
+}
+
+void C_Content::GameWorld::SendPacketAroundSector(const Sector& sector, C_Network::SharedSendBuffer sendBuffer)
+{
+	_sectorManager->SendPacketAroundSector(sector, sendBuffer);
+}
+
+void C_Content::GameWorld::SendPacketAroundSector(int sectorX, int sectorZ, C_Network::SharedSendBuffer sendBuffer)
+{
+	_sectorManager->SendPacketAroundSector(sectorX, sectorZ, sendBuffer);
 }

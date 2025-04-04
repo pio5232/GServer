@@ -41,7 +41,6 @@ namespace C_Network
 		uint16 GetRequiredUsers() const { return _gameInfo.requiredUserCnt; }
 		uint16 MaxUsers() const { return _gameInfo.maxUsers; }
 
-		void MakeAndSendPlayers();
 		ErrorCode TryRun();
 
 		void CheckLoadingAndStartLogic();
@@ -50,7 +49,7 @@ namespace C_Network
 		ErrorCode DeletePlayer(GamePlayerPtr gamePlayerPtr);
 
 		// 무조건 우측값의 형태로 받도록함..
-		void EnqueueAction(Action&& action);
+		void EnqueueAction(Action&& action, bool mustEnqueue = false);
 		WorldChatPtr GetWorldChatPtr();
 	private:
 		std::shared_ptr<class LanClient> _lanClient;

@@ -16,6 +16,9 @@
     <Filter Include="Contents\PlayerState">
       <UniqueIdentifier>{dfa8bfc3-b17b-4c3a-8252-a022d2ca368f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Contents\Sector">
+      <UniqueIdentifier>{224deb34-f78a-4aed-9f94-9c3c57b33eb5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -73,6 +76,12 @@
       <Filter>Contents\PlayerState</Filter>
     </ClCompile>
     <ClCompile Include="PacketBuilder.cpp" />
+    <ClCompile Include="SectorManager.cpp">
+      <Filter>Contents\Sector</Filter>
+    </ClCompile>
+    <ClCompile Include="GameMonitor.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameServer.h">
@@ -127,5 +136,14 @@
       <Filter>Contents\PlayerState</Filter>
     </ClInclude>
     <ClInclude Include="PacketBuilder.h" />
+    <ClInclude Include="SectorManager.h">
+      <Filter>Contents\Sector</Filter>
+    </ClInclude>
+    <ClInclude Include="Sector.h">
+      <Filter>Contents\Sector</Filter>
+    </ClInclude>
+    <ClInclude Include="GameMonitor.h">
+      <Filter>Utils</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -15,10 +15,25 @@ const float fixedDeltaTime = 1.0f / fixedFrame;
 const float limitDeltaTime = 0.2f; 
 
 
-const float sectorMinX = 0;
-const float sectorMaxX = 100.0f;
-const float sectorMinZ = 0;
-const float sectorMaxZ = 100.0f;
+constexpr float mapXMin = 0;
+constexpr float mapXMax = 100.0f;
+constexpr float mapZMin = 0;
+constexpr float mapZMax = 100.0f;
+
+constexpr float centerX = (mapXMax - mapXMin) / 2.0f;
+constexpr float centerZ = (mapZMax - mapZMin) / 2.0f;
+constexpr int sectorCriteriaSize = 10;
+
+constexpr int sectorMaxX = ((int)mapXMax - (int)mapXMin) / sectorCriteriaSize + 2; // 0 [ 1 2 3 4 5 ] 6
+constexpr int sectorMaxZ = ((int)mapZMax - (int)mapZMin) / sectorCriteriaSize + 2;
+
+// for¹® »ç¿ë
+// for( i = startX/Z; i<endX/Z; i++)
+const int startXSectorPos = 1;
+const int startZSectorPos = 1;
+constexpr int endXSectorPos = sectorMaxX - 1;
+constexpr int endZSectorPos = sectorMaxZ - 1;
+
 const float edgeThreshold = 10.0f;
 
 const float defaultSlowWalkSpeed = 3.0f;

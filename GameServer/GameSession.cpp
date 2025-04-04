@@ -8,8 +8,11 @@
 #include "PlayerManager.h"
 #include "GameServer.h"
 
+std::atomic<int> C_Network::GameSession::_aliveGameSessionCount;
+
 C_Network::GameSession::GameSession() : _userId(0),_playerPtr(nullptr), _isLoadCompleted(false)
 {
+	_aliveGameSessionCount.fetch_add(1);
 }
 
 void C_Network::GameSession::Init(ULONGLONG userId)

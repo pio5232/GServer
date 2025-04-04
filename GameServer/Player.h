@@ -1,36 +1,36 @@
 #pragma once
 #include "StatComponent.h"
-#include "TransformComponent.h"
 #include "Entity.h"
 
 namespace C_Content
 {
+	class GameWorld;
 	class PlayerStateController;
 
 	class Player : public Entity
 	{
 	public:
-		Player(EntityType type, float updateInterval);
+		Player(class GameWorld* worldPtr, EntityType type, float updateInterval);
 		~Player();
 
 		virtual void Update(float delta) = 0;
 
 		void Move(float delta);
 		bool IsDead() const { return _statComponent.IsDead(); }
-		
-		const Vector3 GetPosConst() const { return _transformComponent.GetPosConst(); }
+		virtual bool IsMoving() const override;
 	protected:
 		void BroadcastMoveState();
 		void SendPositionUpdate();
 
 	protected :
+		void SendPacketAround(C_Network::SharedSendBuffer buffer);
 		StatComponent _statComponent;
-		TransformComponent _transformComponent;
 		std::unique_ptr<PlayerStateController> _stateController;
 
 		float _posUpdateInterval;
 	private:
 		Vector3 _lastUpdatePos;
+		class GameWorld* _worldPtr;
 
 	};
 }

@@ -9,14 +9,14 @@
 #include "PlayerStateController.h"
 #include "PlayerState.h"
 #include "PacketBuilder.h"
-//C_Network::GamePlayer::GamePlayer(ULONGLONG userId, SharedSession sharedSession, bool isAi, Vector3 pos) : _userId(userId), _mySession(sharedSession),
-//_transformComponent(userId, pos), _statComponent(userId), _isAi(isAi)
-//{
-//}
-//
+#include "GameWorld.h"
 
-C_Content::GamePlayer::GamePlayer(GameSessionPtr gameSessionPtr) : Player(EntityType::GamePlayer, posUpdateInterval),_ownerSession(gameSessionPtr), _userId(gameSessionPtr->GetUserId())
+std::atomic<int> C_Content::GamePlayer::_aliveGamePlayerCount;
+
+using namespace C_Network;
+C_Content::GamePlayer::GamePlayer(GameSessionPtr gameSessionPtr, GameWorld* worldPtr) : Player(worldPtr, EntityType::GamePlayer, posUpdateInterval),_ownerSession(gameSessionPtr), _userId(gameSessionPtr->GetUserId())
 {
+	_aliveGamePlayerCount.fetch_add(1);
 }
 
 void C_Content::GamePlayer::Update(float delta)
@@ -68,7 +68,7 @@ void C_Content::GamePlayer::ProcessAttackPacket()
 
 	C_Network::SharedSendBuffer buffer = PacketBuilder::BuildAttackNotifyPacket(entityId);
 
-	C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);	
+	SendPacketAround(buffer);
 }
 
 

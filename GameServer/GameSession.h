@@ -1,11 +1,12 @@
 #pragma once
+
 namespace C_Network
 {
 	class GameSession : public C_Network::Session
 	{
 	public:
 		GameSession();
-
+		~GameSession() { _aliveGameSessionCount.fetch_sub(1); }
 		void Init(ULONGLONG userId);
 		virtual void OnConnected() override;
 		virtual void OnDisconnected() override;
@@ -16,7 +17,11 @@ namespace C_Network
 		ULONGLONG GetUserId() const { return _userId; }
 
 		void OnLoadComplete() { _isLoadCompleted = true; }
+
+		static int GetAliveGameSessionCount() { return _aliveGameSessionCount.load(); }
+
 	private:
+		static std::atomic<int> _aliveGameSessionCount;
 		ULONGLONG _userId;
 		GamePlayerPtr _playerPtr;
 	

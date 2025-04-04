@@ -4,15 +4,15 @@
 
 namespace C_Content
 {
+	class GameWorld;
 	class AIPlayer : public Player
 	{
 	public:
-		AIPlayer();
+		AIPlayer(GameWorld* worldPtr);
 		~AIPlayer() { printf("~~~AI Destructor\n"); }
 
 		virtual void Update(float delta);
 
-		bool ConsiderToMove();
 		void UpdateAIMovement();
 		
 	private:

@@ -67,7 +67,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessEnterGameRequestPacket(Game
 
 	C_Network::MakeMyCharacterPacket makeMyCharacterPacket;
 	makeMyCharacterPacket.entityId = myPlayer->GetEntityId();
-	makeMyCharacterPacket.pos = myPlayer->GetPosConst();
+	makeMyCharacterPacket.pos = myPlayer->GetPosition();
 
 	C_Network::SharedSendBuffer makeMyCharacterBuffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(makeMyCharacterPacket));
 
@@ -110,10 +110,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStartRequestPacket(Game
 				return;
 
 			gamePlayer->ProcessMoveStartPacket(packet);
-
 		});
-
-
 	//if(gamePlayerPtr->_transformComponent._position.)
 
 	return ErrorCode::NONE;
@@ -127,6 +124,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStopRequestPacket(GameS
 	std::shared_ptr<C_Network::GameServer> gameServer = std::static_pointer_cast<C_Network::GameServer>(gameSessionPtr->GetServer());
 
 	GameSessionPtr myGSession = gameSessionPtr;
+	
 	gameServer->EnqueueAction([packet, myGSession]()
 		{
 			GamePlayerPtr gamePlayer = myGSession->GetPlayer();
@@ -135,7 +133,6 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessMoveStopRequestPacket(GameS
 				return;
 
 			gamePlayer->ProcessMoveStopPacket(packet);
-
 		});
 
 	return ErrorCode::NONE;
@@ -181,6 +178,7 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessAttackRequestPacket(GameSes
 	std::shared_ptr<C_Network::GameServer> gameServer = std::static_pointer_cast<C_Network::GameServer>(gameSessionPtr->GetServer());
 
 	GameSessionPtr myGSession = gameSessionPtr;
+	
 	gameServer->EnqueueAction([myGSession]()
 		{
 			GamePlayerPtr gamePlayer = myGSession->GetPlayer();

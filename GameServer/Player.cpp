@@ -3,11 +3,15 @@
 #include "PlayerManager.h"
 #include "BufferMaker.h"
 #include "PlayerStateController.h"
-C_Content::Player::Player(EntityType type,float updateInterval) : Entity(type), _lastUpdatePos{}, _posUpdateInterval(updateInterval)
+#include "PacketBuilder.h"
+#include "GameWorld.h"
+
+using namespace C_Network;
+C_Content::Player::Player(GameWorld* worldPtr, EntityType type,float updateInterval) : Entity(type),_worldPtr(worldPtr), _lastUpdatePos{}, _posUpdateInterval(updateInterval), _statComponent()
 {
 	_stateController = std::make_unique<PlayerStateController>(this);
 
-	const Vector3 pos = GetPosConst();
+	const Vector3 pos = GetPosition();
 	printf("Player Constructor - [ID : %llu, Position : [%0.3f, %0.3f, %0.3f]\n", GetEntityId(), pos.x, pos.y, pos.z);
 }
 
@@ -38,35 +42,29 @@ void C_Content::Player::Move(float delta)
 	//printf(" Transform Update -  EntityID : %llu, pos [ %0.3f, %0.3f, %0.3f ]]\n",GetEntityId(), _transformComponent.GetPosConst().x, _transformComponent.GetPosConst().y, _transformComponent.GetPosConst().z);
 }
 
+bool C_Content::Player::IsMoving() const
+{
+	return _stateController->GetMoveType() == C_Content::PlayerMoveStateBase::MoveState::Move;
+}
+
 
 void C_Content::Player::BroadcastMoveState()
 {
 	if (_stateController->GetMoveType() == C_Content::PlayerMoveStateBase::MoveState::Move)
 	{
-		MoveStartNotifyPacket moveNotifyPacket;
-		moveNotifyPacket.entityId = GetEntityId();
-		moveNotifyPacket.pos = _transformComponent.GetPosConst();
-		moveNotifyPacket.rotY = _transformComponent.GetRotConst().y;
+		C_Network::SharedSendBuffer buffer = C_Content::PacketBuilder::BuildMoveStartNotifyPacket(GetEntityId(), _transformComponent.GetPosConst(), _transformComponent.GetRotConst().y);	
 
-		C_Network::SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(moveNotifyPacket));
+		_worldPtr->SendPacketAroundSector(GetCurrentSector(), buffer);
 
-		*buffer << moveNotifyPacket.size << moveNotifyPacket.type << moveNotifyPacket.entityId << moveNotifyPacket.pos << moveNotifyPacket.rotY;
-
-		C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
-
+		//C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
 	}
 	else if(_stateController->GetMoveType() == C_Content::PlayerMoveStateBase::MoveState::Idle)
 	{
-		MoveStopNotifyPacket stopNotifyPacket;
-		stopNotifyPacket.entityId = GetEntityId();
-		stopNotifyPacket.pos = _transformComponent.GetPosConst();
-		stopNotifyPacket.rotY = _transformComponent.GetRotConst().y;
+		C_Network::SharedSendBuffer buffer = C_Content::PacketBuilder::BuildMoveStopNotifyPacket(GetEntityId(), _transformComponent.GetPosConst(), _transformComponent.GetRotConst().y);
+		
+		_worldPtr->SendPacketAroundSector(GetCurrentSector(), buffer);
 
-		C_Network::SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(stopNotifyPacket));
-
-		*buffer << stopNotifyPacket.size << stopNotifyPacket.type << stopNotifyPacket.entityId << stopNotifyPacket.pos << stopNotifyPacket.rotY;
-
-		C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
+		//C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
 	}
 }
 void C_Content::Player::SendPositionUpdate()
@@ -76,19 +74,15 @@ void C_Content::Player::SendPositionUpdate()
 	if (Vector3::Distance(currentPos, _lastUpdatePos) < 0.1f)
 		return;
 
-	C_Network::UpdateTransformPacket updatePacket;
+	SharedSendBuffer buffer = C_Content::PacketBuilder::BuildUpdateTransformPacket(C_Utility::GetTimeStamp(), GetEntityId(), currentPos, _transformComponent.GetRotConst());
 
-	updatePacket.timeStamp = C_Utility::GetTimeStamp();
-	updatePacket.entityId = GetEntityId();
-	updatePacket.pos = currentPos;
-	updatePacket.rot = _transformComponent.GetRotConst();
-
-	SharedSendBuffer buffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(updatePacket));
-
-	*buffer << updatePacket.size << updatePacket.type << updatePacket.timeStamp << updatePacket.entityId << updatePacket.pos
-		<< updatePacket.rot;
-
-	C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
+	//C_Content::PlayerManager::GetInstance().SendToAllPlayer(buffer);
+	_worldPtr->SendPacketAroundSector(GetCurrentSector(), buffer);
 
 	_lastUpdatePos = currentPos;
+}
+
+void C_Content::Player::SendPacketAround(C_Network::SharedSendBuffer buffer)
+{
+	_worldPtr->SendPacketAroundSector(GetCurrentSector(), buffer);
 }

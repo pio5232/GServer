@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "TransformComponent.h"
 
-TransformComponent::TransformComponent(Vector3 pos) : BaseComponent(ComponentType::Transform), _position(pos), _rotation{Vector3::Zero()}, _moveSpeed(defaultWalkSpeed)
+TransformComponent::TransformComponent(const Vector3& pos) : BaseComponent(ComponentType::Transform), _position(pos), _rotation{Vector3::Zero()}, _moveSpeed(defaultWalkSpeed)
 {
 }
 TransformComponent::TransformComponent() : BaseComponent(ComponentType::Transform),_moveSpeed(defaultWalkSpeed), _rotation{Vector3::Zero()}
@@ -16,9 +16,9 @@ TransformComponent::~TransformComponent()
 
 void TransformComponent::SetRandomDirection()
 {
-	if (IsEdge() && CheckChance(20))
+	if (IsEdge() && CheckChance(30))
 	{
-		Vector3 positionToCenter = Vector3::Zero() - _position;
+		Vector3 positionToCenter = Vector3(centerX, 0, centerZ) - _position;
 
 		float rotY = atan2f(positionToCenter.x, positionToCenter.z) * deg2Rad;
 
@@ -65,11 +65,11 @@ void TransformComponent::SetPosition(const Vector3& pos)
 
 bool TransformComponent::CanGo(float prediction_x, float prediction_z) const
 {
-	return prediction_x > sectorMinX && prediction_x < sectorMaxX && prediction_z > sectorMinZ && prediction_z < sectorMaxZ;
+	return prediction_x > mapXMin && prediction_x < mapXMax && prediction_z > mapZMin && prediction_z < mapZMax;
 }
 
 bool TransformComponent::IsEdge() const
 {
-	return _position.x < edgeThreshold || _position.x > (sectorMaxX - edgeThreshold) 
-		|| _position.z < edgeThreshold || _position.z > (sectorMaxZ - edgeThreshold);
+	return _position.x < edgeThreshold || _position.x > (mapXMax - edgeThreshold) 
+		|| _position.z < edgeThreshold || _position.z > (mapZMax - edgeThreshold);
 }
