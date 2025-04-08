@@ -30,6 +30,7 @@ namespace C_Content
 			None = 0,
 			Attack,
 			Attacked,
+			Dead,
 		};
 		PlayerActionStateBase(ActionState state) : _actionState(state) {}
 		virtual void OnEnterState(C_Content::Player* player) = 0;

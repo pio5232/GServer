@@ -1,10 +1,10 @@
 #include "pch.h"
 #include "TransformComponent.h"
 
-TransformComponent::TransformComponent(const Vector3& pos) : BaseComponent(ComponentType::Transform), _position(pos), _rotation{Vector3::Zero()}, _moveSpeed(defaultWalkSpeed)
+TransformComponent::TransformComponent(const Vector3& pos) : BaseComponent(ComponentType::Transform), _position(pos), _rotation{ Vector3::Zero() }, _moveSpeed(defaultWalkSpeed), _dirNormalized(Vector3::Zero())
 {
 }
-TransformComponent::TransformComponent() : BaseComponent(ComponentType::Transform),_moveSpeed(defaultWalkSpeed), _rotation{Vector3::Zero()}
+TransformComponent::TransformComponent() : BaseComponent(ComponentType::Transform),_moveSpeed(defaultWalkSpeed), _rotation{Vector3::Zero()}, _dirNormalized(Vector3::Zero())
 {
 	_position = GenerateRandomPos();
 }

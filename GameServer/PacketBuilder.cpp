@@ -13,6 +13,19 @@ C_Network::SharedSendBuffer C_Content::PacketBuilder::BuildAttackNotifyPacket(UL
 	return sendBuffer;
 }
 
+C_Network::SharedSendBuffer C_Content::PacketBuilder::BuildAttackedNotifyPacket(ULONGLONG entityId, uint16 currentHp)
+{
+	C_Network::AttackedNotifyPacket attackedNotifyPacket;
+	attackedNotifyPacket.entityId = entityId;
+	attackedNotifyPacket.currentHp = currentHp;
+
+	C_Network::SharedSendBuffer sendBuffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(attackedNotifyPacket));
+
+	*sendBuffer << attackedNotifyPacket.size << attackedNotifyPacket.type << attackedNotifyPacket.entityId << attackedNotifyPacket.currentHp;
+
+	return sendBuffer;
+}
+
 C_Network::SharedSendBuffer C_Content::PacketBuilder::BuildMakeOtherCharacterPacket(ULONGLONG entityId, const Vector3& position)
 {
 	C_Network::MakeOtherCharacterPacket makeOtherCharacterPacket;
@@ -89,6 +102,18 @@ C_Network::SharedSendBuffer C_Content::PacketBuilder::BuildUpdateTransformPacket
 
 	*sendBuffer << updatePacket.size << updatePacket.type << updatePacket.timeStamp << updatePacket.entityId << updatePacket.pos
 		<< updatePacket.rot;
+
+	return sendBuffer;
+}
+
+C_Network::SharedSendBuffer C_Content::PacketBuilder::BuildDieNotifyPacket(ULONGLONG entityId)
+{
+	C_Network::DieNotifyPacket dieNotifyPacket;
+	dieNotifyPacket.entityId = entityId;
+
+	C_Network::SharedSendBuffer sendBuffer = C_Network::BufferMaker::MakeSendBuffer(sizeof(dieNotifyPacket));
+
+	*sendBuffer << dieNotifyPacket.size << dieNotifyPacket.type << dieNotifyPacket.entityId;
 
 	return sendBuffer;
 }

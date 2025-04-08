@@ -163,6 +163,9 @@ void C_Content::SectorManager::UpdateSector(EntityPtr entity)
 	{
 		for (const auto& addEntity : _sectorSet[addAroundSector.sectors[i].z][addAroundSector.sectors[i].x])
 		{
+			if (addEntity->IsDead())
+				continue;
+
 			C_Network::SharedSendBuffer makeBuffer = C_Content::PacketBuilder::BuildMakeOtherCharacterPacket(addEntity->GetEntityId(), addEntity->GetPosition());
 
 			C_Content::PlayerManager::GetInstance().SendToPlayer(makeBuffer, userId);
@@ -324,6 +327,47 @@ void C_Content::SectorManager::PrintSectorInfo() const
 		printf("\n");
 	}
 	printf("\n\n");
+}
+
+EntityPtr C_Content::SectorManager::GetMinEntityInRange(EntityPtr targetEntity, float range)
+{
+	// Range가 섹터 하나의 크기보다 크다면..? 어떻게 처리하지
+	float minRange = range * range;
+	EntityPtr minEntity = nullptr;
+
+	// 1. 내 주변 섹터 얻어오기.
+	Sector sector = targetEntity->GetCurrentSector();
+	AroundSector aroundSector;
+	GetSectorAround(sector.x,sector.z, &aroundSector);
+	
+	// 내가 보는 방향
+	Vector3 from = targetEntity->GetNormalizedForward();
+	Vector3 targetPosition = targetEntity->GetPosition();
+
+	// 2. 얻어온 섹터를 순회하면서 비교한다. 
+	for (int i = 0; i < aroundSector.sectorCount; i++)
+	{
+		for (auto& entity : _sectorSet[aroundSector.sectors[i].z][aroundSector.sectors[i].x])
+		{
+			if (entity->IsDead() || entity == targetEntity)
+				continue;
+
+			Vector3 dist = entity->GetPosition() - targetPosition;
+			float sqrDist = dist.sqrMagnitude();
+			if (sqrDist < minRange)
+			{
+				Vector3 to = dist.Normalized();
+
+				if (Vector3::Angle(from, to) < 30.0f)
+				{
+					minRange = sqrDist;
+					minEntity = entity;
+				}
+			}
+		}
+	}
+
+	return minEntity;
 }
 
 bool C_Content::SectorManager::IsValidSector(int sectorXPos, int sectorZPos)

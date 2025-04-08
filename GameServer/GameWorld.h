@@ -27,6 +27,12 @@ namespace C_Content
 		void SendPacketAroundSector(int sectorX, int sectorZ, C_Network::SharedSendBuffer sendBuffer);
 
 		const class SectorManager* GetSectorManagerConst() const { return _sectorManager.get(); }
+	
+
+		// HandleMoveStartPacket
+		// HandleMoveStopPacket
+
+		void HandleAttackPacket(GamePlayerPtr attacker, const C_Network::AttackRequestPacket& packet);
 	private:
 		std::atomic<bool> _isRunning;
 		std::queue<Action> _actionQueue;

@@ -21,8 +21,8 @@ namespace C_Content
 		// 이런 함수 만들고 전송하는 부분 모두 분리하도록 한다.
 		void ProcessMoveStartPacket(const C_Network::MoveStartRequestPacket& clientPacket);
 		void ProcessMoveStopPacket(const C_Network::MoveStopRequestPacket& clientPacket);
-		void ProcessAttackPacket();
-
+		
+		void SetAttackState();
 		static int GetAliveGamePlayerCount() { return _aliveGamePlayerCount.load(); }
 	private:
 		static std::atomic<int> _aliveGamePlayerCount;

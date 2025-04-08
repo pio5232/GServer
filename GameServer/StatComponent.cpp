@@ -11,6 +11,12 @@ StatComponent::~StatComponent()
 {
 }
 
-void StatComponent::Update(float delta)
+void StatComponent::TakeDamage(uint16 damage)
 {
+	// hp가 uint16이기 때문에 uint16은 0이하로 떨어지지 않음. 그래서 체크를 다르게 하자.
+
+	if (_curHp <= damage)
+		_curHp = 0;
+	else
+		_curHp -= damage;
 }

@@ -16,8 +16,12 @@ namespace C_Content
 		virtual void Update(float delta) = 0;
 
 		void Move(float delta);
-		bool IsDead() const { return _statComponent.IsDead(); }
+		bool IsDead() const override { return _statComponent.IsDead(); }
+		float GetAttackRange() const { return _statComponent.GetAttackRange(); }
 		virtual bool IsMoving() const override;
+		virtual void TakeDamage(uint16 damage) override;
+		virtual uint16 GetHp() const override { return _statComponent.GetHp(); }
+		uint16 GetAttackDamage() const { return _statComponent.GetAttackDamage(); }
 	protected:
 		void BroadcastMoveState();
 		void SendPositionUpdate();

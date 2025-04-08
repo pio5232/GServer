@@ -8,6 +8,8 @@
 #include "BufferMaker.h"
 #include "SectorManager.h"
 #include "PacketBuilder.h"
+#include "GamePlayer.h"
+
 C_Content::GameWorld::GameWorld()
 {
 	_sectorManager = std::make_unique<C_Content::SectorManager>();
@@ -207,3 +209,38 @@ void C_Content::GameWorld::SendPacketAroundSector(int sectorX, int sectorZ, C_Ne
 {
 	_sectorManager->SendPacketAroundSector(sectorX, sectorZ, sendBuffer);
 }
+
+void C_Content::GameWorld::HandleAttackPacket(GamePlayerPtr attacker, const C_Network::AttackRequestPacket& packet)
+{
+	printf("\t\t\tProcessAttackPacket!!!!\n");
+
+	// 1. 공격 상태로 전환 후 모든 녀석들에게 패킷 전송
+	attacker->SetAttackState();
+	ULONGLONG entityId = attacker->GetEntityId();
+	C_Network::SharedSendBuffer buffer = PacketBuilder::BuildAttackNotifyPacket(entityId);
+	SendPacketAroundSector(attacker->GetCurrentSector(), buffer);
+
+	// 2. 데미지 판정. 공격당할 녀석을 얻어온다.
+	EntityPtr victimTarget = _sectorManager->GetMinEntityInRange(attacker, attacker->GetAttackRange());
+	if (victimTarget == nullptr)
+	{
+		printf("-------------------------- VicTimTarget is Null -------------------\n");
+		return;
+	}
+	// 3. 체크.
+	victimTarget->TakeDamage(attacker->GetAttackDamage());
+
+	if (victimTarget->IsDead())
+	{
+		C_Network::SharedSendBuffer buffer = PacketBuilder::BuildDieNotifyPacket(victimTarget->GetEntityId());
+		SendPacketAroundSector(victimTarget->GetCurrentSector(), buffer);
+
+		// 상태를 죽음으로 만든다.
+		// 아직 안 만들었음.
+	}
+	else
+	{
+		C_Network::SharedSendBuffer buffer = PacketBuilder::BuildAttackedNotifyPacket(victimTarget->GetEntityId(), victimTarget->GetHp());
+		SendPacketAroundSector(victimTarget->GetCurrentSector(), buffer);
+	}
+} 

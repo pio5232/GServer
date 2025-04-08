@@ -175,21 +175,11 @@ ErrorCode C_Network::GameClientPacketHandler::ProcessChatRequestPacket(GameSessi
 
 ErrorCode C_Network::GameClientPacketHandler::ProcessAttackRequestPacket(GameSessionPtr& gameSessionPtr, C_Utility::CSerializationBuffer& buffer)
 {
+	C_Network::AttackRequestPacket packet;
+
 	std::shared_ptr<C_Network::GameServer> gameServer = std::static_pointer_cast<C_Network::GameServer>(gameSessionPtr->GetServer());
 
-	GameSessionPtr myGSession = gameSessionPtr;
-	
-	gameServer->EnqueueAction([myGSession]()
-		{
-			GamePlayerPtr gamePlayer = myGSession->GetPlayer();
-
-			if (gamePlayer->IsDead())
-				return;
-
-			gamePlayer->ProcessAttackPacket();
-
-		});
-
+	gameServer->ProxyAttackPacket(gameSessionPtr, packet);
 
 	return ErrorCode::NONE;
 }

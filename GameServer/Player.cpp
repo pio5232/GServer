@@ -5,7 +5,7 @@
 #include "PlayerStateController.h"
 #include "PacketBuilder.h"
 #include "GameWorld.h"
-
+#include "PlayerState.h"
 using namespace C_Network;
 C_Content::Player::Player(GameWorld* worldPtr, EntityType type,float updateInterval) : Entity(type),_worldPtr(worldPtr), _lastUpdatePos{}, _posUpdateInterval(updateInterval), _statComponent()
 {
@@ -47,6 +47,13 @@ bool C_Content::Player::IsMoving() const
 	return _stateController->GetMoveType() == C_Content::PlayerMoveStateBase::MoveState::Move;
 }
 
+void C_Content::Player::TakeDamage(uint16 damage)
+{
+	_statComponent.TakeDamage(damage);
+
+	_stateController->ChangeState(&C_Content::PlayerAttackedState::GetInstance());
+}
+
 
 void C_Content::Player::BroadcastMoveState()
 {
@@ -71,7 +78,7 @@ void C_Content::Player::SendPositionUpdate()
 {
 	Vector3 currentPos = _transformComponent.GetPosConst();
 
-	if (Vector3::Distance(currentPos, _lastUpdatePos) < 0.1f)
+	if ((currentPos - _lastUpdatePos).sqrMagnitude() < 0.01f)
 		return;
 
 	SharedSendBuffer buffer = C_Content::PacketBuilder::BuildUpdateTransformPacket(C_Utility::GetTimeStamp(), GetEntityId(), currentPos, _transformComponent.GetRotConst());

@@ -91,6 +91,28 @@ namespace C_Content
 	};
 
 	/// +-------------------+
+	/// |  PlayerDeadState	|
+	/// +-------------------+
+	class PlayerDeadState : public PlayerActionStateBase
+	{
+	public:
+		static PlayerDeadState& GetInstance()
+		{
+			static PlayerDeadState instance;
+
+			return instance;
+		}
+		virtual void OnEnterState(C_Content::Player* player) override;
+		virtual void OnStayState(C_Content::Player* player, float delta) override;
+		virtual void OnExitState(C_Content::Player* player) override;
+
+		virtual float GetDuration() const override { return DeadDuration; }
+
+	private:
+		PlayerDeadState();
+	};
+
+	/// +-------------------+
 	/// |  NoneActionState	|
 	/// +-------------------+}
 	class NoneActionState : public PlayerActionStateBase

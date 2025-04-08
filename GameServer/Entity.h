@@ -20,13 +20,17 @@ namespace C_Content
 		virtual void Update(float delta) = 0;
 		const Vector3& GetPosition() const { return _transformComponent.GetPosConst(); }
 		const Vector3& GetRotation() const { return _transformComponent.GetRotConst(); }
+		const Vector3& GetNormalizedForward() const { return _transformComponent.GetNormalizedDir(); }
 
 		ULONGLONG GetEntityId() const { return _entityId; }
 		EntityType GetType() const { return _entityType; }
 
+		virtual void TakeDamage(uint16 damage) = 0;
+		virtual bool IsDead() const = 0;
+		virtual uint16 GetHp() const = 0;
 		virtual bool IsMoving() const { return false; }
-		bool IsSectorUpdated();
 
+		bool IsSectorUpdated();
 		const Sector& GetCurrentSector() const { return _curSector; }
 		const Sector& GetPrevSector() const { return _prevSector; }
 	private:

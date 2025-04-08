@@ -13,6 +13,7 @@
 #include "GameSession.h"
 #include "WorldChat.h"
 #include "GameMonitor.h"
+
 C_Network::GameServer::GameServer(const NetAddress& netAddr, uint maxSessionCnt, C_Network::SessionCreator creator) : ServerBase(netAddr, maxSessionCnt, creator), _gameInfo{}, _isRunning(false), _loadCompletedCnt(0)
 {
 	_gameWorld = std::make_unique<C_Content::GameWorld>();
@@ -178,6 +179,19 @@ void C_Network::GameServer::EnqueueAction(Action&& action, bool mustEnqueue)
 WorldChatPtr C_Network::GameServer::GetWorldChatPtr()
 {
 	return _gameWorld->GetWorldChat();
+}
+
+void C_Network::GameServer::ProxyAttackPacket(GameSessionPtr gameSession, AttackRequestPacket packet)
+{
+	GamePlayerPtr gamePlayerPtr = gameSession->GetPlayer();
+	_gameWorld->TryEnqueueAction([this, gamePlayerPtr, packet](){
+
+		if (gamePlayerPtr->IsDead())
+			return;
+
+		_gameWorld->HandleAttackPacket(gamePlayerPtr, packet);
+
+	});
 }
 
 void C_Network::GameServer::CheckHeartbeat()

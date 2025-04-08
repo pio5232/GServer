@@ -51,6 +51,9 @@ namespace C_Network
 		// 무조건 우측값의 형태로 받도록함..
 		void EnqueueAction(Action&& action, bool mustEnqueue = false);
 		WorldChatPtr GetWorldChatPtr();
+
+		void ProxyAttackPacket(GameSessionPtr gameSession, AttackRequestPacket packet);
+
 	private:
 		std::shared_ptr<class LanClient> _lanClient;
 

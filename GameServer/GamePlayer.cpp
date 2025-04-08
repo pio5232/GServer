@@ -58,17 +58,10 @@ void C_Content::GamePlayer::ProcessMoveStopPacket(const MoveStopRequestPacket& c
 	BroadcastMoveState();
 }
 
-void C_Content::GamePlayer::ProcessAttackPacket()
+
+void C_Content::GamePlayer::SetAttackState()
 {
-	printf("ProcessAttackPacket!!\n");
-
-	ULONGLONG entityId = GetEntityId();
-
-	_stateController->ChangeState(&C_Content::PlayerAttackedState::GetInstance());
-
-	C_Network::SharedSendBuffer buffer = PacketBuilder::BuildAttackNotifyPacket(entityId);
-
-	SendPacketAround(buffer);
+	_stateController->ChangeState(&C_Content::PlayerAttackState::GetInstance());
 }
 
 
@@ -77,7 +70,8 @@ void C_Content::GamePlayer::SyncPos(const Vector3& clientPos)
 	Vector3 serverPos = _transformComponent.GetPosConst();
 
 	//if (abs(serverPos.x - clientPos.x) < defaultErrorRange && abs(serverPos.z - clientPos.z) < defaultErrorRange)
-	if (Vector3::Distance(serverPos, clientPos) < defaultErrorRange)
+	//if (Vector3::Distance(serverPos, clientPos) < defaultErrorRange)
+	if ((serverPos - clientPos).sqrMagnitude() < (defaultErrorRange * defaultErrorRange))
 	{
 		// 오차 범위가 작으면 start / stop 나올 때 clientPos를 기준으로 설정. 
 		// 

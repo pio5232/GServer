@@ -15,6 +15,8 @@ const float fixedDeltaTime = 1.0f / fixedFrame;
 const float limitDeltaTime = 0.2f; 
 
 
+constexpr float COS_30 = 0.8660254f;
+
 constexpr float mapXMin = 0;
 constexpr float mapXMax = 100.0f;
 constexpr float mapZMin = 0;
@@ -40,10 +42,10 @@ const float defaultSlowWalkSpeed = 3.0f;
 const float defaultWalkSpeed = 6.0f;
 const float defaultRunSpeed = 9.0f;
 
-const uint16 defaultMaxHp = 1;
+const uint16 defaultMaxHp = 3;
 const uint16 defaultAttackDamage= 1;
 
-const float defaultAttackRange = 0.7f;
+const float defaultAttackRange = 1.6f;
 
 const float defaultErrorRange = 3.0f; // 오차 범위
 const float posUpdateInterval = 0.2f;
@@ -51,6 +53,8 @@ const float posUpdateInterval = 0.2f;
 
 const float attackDuration = 0.8f;
 const float attackedDuration = 1.0f;
+const float DeadDuration = 3.0f;
+
 namespace C_Content
 {
 	class Entity;

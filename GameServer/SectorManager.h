@@ -24,6 +24,7 @@ namespace C_Content
 		void SendPacketAroundSector(int sectorX, int sectorZ, C_Network::SharedSendBuffer sendBuffer);
 	
 		void PrintSectorInfo() const;
+		EntityPtr GetMinEntityInRange(EntityPtr targetEntity, float range);
 	private:
 		bool IsValidSector(int sectorXPos, int sectorZPos);
 		// 주위 9섹터 얻어오기.

@@ -62,6 +62,22 @@ void C_Content::PlayerAttackedState::OnExitState(C_Content::Player* player)
 {
 }
 
+/// +-------------------+
+/// |  PlayerDeadState	|
+/// +-------------------+
+C_Content::PlayerDeadState::PlayerDeadState() : PlayerActionStateBase(ActionState::Dead) {}
+
+void C_Content::PlayerDeadState::OnEnterState(C_Content::Player* player)
+{
+}
+
+void C_Content::PlayerDeadState::OnStayState(C_Content::Player* player, float delta)
+{
+}
+
+void C_Content::PlayerDeadState::OnExitState(C_Content::Player* player)
+{
+}
 
 /// +-------------------+
 /// |  NoneActionState	|
@@ -74,3 +90,4 @@ void C_Content::NoneActionState::OnStayState(C_Content::Player* player, float de
 void C_Content::NoneActionState::OnExitState(C_Content::Player* player) {}
 
 C_Content::NoneActionState::NoneActionState() : PlayerActionStateBase(ActionState::None) {}
+
